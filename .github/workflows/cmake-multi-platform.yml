@@ -1,0 +1,105 @@
+# This starter workflow is for a CMake project running on multiple platforms. There is a different starter workflow if you just want a single platform.
+# See: https://github.com/actions/starter-workflows/blob/main/ci/cmake-single-platform.yml
+name: CMake on multiple platforms
+
+on:
+  workflow_dispatch:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      # Set fail-fast to false to ensure that feedback is delivered for all matrix combinations. Consider changing this to true when your workflow is stable.
+      fail-fast: false
+
+      # Set up a matrix to run the following 3 configurations:
+      # 1. <Windows, Release, latest MSVC compiler toolchain on the default runner image, default generator>
+      # 2. <Linux, Release, latest GCC compiler toolchain on the default runner image, default generator>
+      # 3. <Linux, Release, latest Clang compiler toolchain on the default runner image, default generator>
+      #
+      # To add more build types (Release, Debug, RelWithDebInfo, etc.) customize the build_type list.
+      matrix:
+        os: [windows-2022, ubuntu-latest]
+        build_type: [Release]
+        c_compiler: [gcc, cl]
+        include:
+          - os: ubuntu-latest
+            c_compiler: gcc
+            cpp_compiler: g++
+          - os: windows-2022
+            c_compiler: cl
+            cpp_compiler: cl
+        # Exclude invalid combinations of OS and compiler
+        exclude:
+          - os: windows-2022
+            c_compiler: gcc
+          - os: ubuntu-latest
+            c_compiler: cl
+
+    steps:
+    - uses: actions/checkout@v5
+
+    # ----- Qt installation -----
+    # Windows/Linux: keep install-qt-action
+    - name: Install Qt 5.15.2 (Windows/Linux)
+      if: runner.os != 'macOS'
+      uses: jurplel/install-qt-action@v4
+      with:
+        version: '5.15.2'
+        modules: 'qtwebengine'
+        dir: '${{ runner.temp }}/qt'
+        # Optionally add tools if you need them:
+        # tools: 'tools_qttools'
+
+    # ----- String setup -----
+    - name: Set reusable strings
+      id: strings
+      shell: bash
+      run: |
+        # Use a very short build dir to minimize path length (especially on Windows)
+        echo "build-output-dir=${{ runner.temp }}/b" >> "$GITHUB_OUTPUT"
+
+    # ----- Configure -----
+    - name: Configure CMake
+      run: >
+        cmake
+        -B "${{ steps.strings.outputs.build-output-dir }}"
+        -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
+        -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
+        -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+        -DCMAKE_OBJECT_PATH_MAX=240
+        -DCMAKE_INSTALL_PREFIX="${{ runner.temp }}/i"
+        -DCMAKE_CXX_MP_FLAGS=ON
+        -DQt5_DIR="${{ env.Qt5_DIR }}/Qt5"
+        -S "${{ github.workspace }}"
+
+    # ----- Build -----
+    - name: Build
+      run: cmake --build "${{ steps.strings.outputs.build-output-dir }}" --config ${{ matrix.build_type }} --parallel 4
+
+    # ----- Package -----
+    - name: Package
+      working-directory: ${{ steps.strings.outputs.build-output-dir }}
+      run: cmake --build "${{ steps.strings.outputs.build-output-dir }}/Slicer-build" --config ${{ matrix.build_type }} --target package
+
+    # ----- Upload artifacts -----
+    # Upload the built package as a workflow artifact for each matrix combination
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: IDCDownloader-${{ matrix.os }}-${{ matrix.build_type }}-${{ github.sha }}
+        path: ${{ steps.strings.outputs.build-output-dir }}/Slicer-build/IDCDownloader-*
+
+    # ----- Release -----
+    # Upload the built package as a release asset when a release is published
+    - name: Upload Release Asset
+      if: startsWith(github.event_name, 'release')
+      uses: softprops/action-gh-release@v1
+      with:
+        files: ${{ steps.strings.outputs.build-output-dir }}/Slicer-build/IDCDownloader-*
