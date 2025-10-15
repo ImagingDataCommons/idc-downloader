@@ -50,9 +50,24 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         ScriptedLoadableModuleWidget.__init__(self, parent)
         VTKObservationMixin.__init__(self)
 
+    def setupPythonEnvironment(self):
+        with slicer.util.MessageDialog(f'Performing first-time setup.\nPlease wait...'):
+            with slicer.util.WaitCursor():
+                slicer.util.pip_install("idc-index>=0.7.0")
+
     def setup(self):
         """Called when the application opens the module the first time and the widget is initialized."""
         ScriptedLoadableModuleWidget.setup(self)
+
+        try:
+            import idc_index
+        except ModuleNotFoundError as _:
+            try:
+                self.setupPythonEnvironment()
+                import idc_index
+            except Exception as _:
+                slicer.util.errorDisplay(f"Failed to set up python environment.")
+                slicer.util.exit(slicer.util.EXIT_FAILURE)
 
         # Load widget from .ui file (created by Qt Designer)
         self.uiWidget = slicer.util.loadUI(self.resourcePath("UI/Home.ui"))
