@@ -91,7 +91,7 @@ jobs:
     # ----- Upload artifacts -----
     # Upload the built package as a workflow artifact for each matrix combination
     - name: Upload artifacts
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: IDCDownloader-${{ matrix.os }}-${{ matrix.build_type }}-${{ github.sha }}
         path: ${{ steps.strings.outputs.build-output-dir }}/Slicer-build/IDCDownloader-*
