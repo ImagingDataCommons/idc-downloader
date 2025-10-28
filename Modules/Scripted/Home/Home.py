@@ -11,7 +11,7 @@ from slicer.ScriptedLoadableModule import (
 from slicer.util import VTKObservationMixin
 
 # Import to ensure the files are available through the Qt resource system
-from Resources import HomeResources  # noqa: F401
+#from Resources import HomeResources  # noqa: F401
 
 
 class Home(ScriptedLoadableModule):
@@ -96,7 +96,29 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         slicer.util.moduleSelector().selectedModule = "IDCBrowser"
 
         idcBrowserWidget = slicer.modules.idcbrowser.widgetRepresentation().self()
+        idcBrowserWidget.importOnDownloadAction.setChecked(False)
+        idcBrowserWidget.downloadButton.setVisible(False)
+        #idcBrowserWidget.downloadButton.setMenu(None)
+
+        self.downloadButton = qt.QPushButton("Download")
+        self.downloadButton.toolTip = "Download selected items to local storage."
+        downloadLayout = idcBrowserWidget.downloadButton.parent().layout()
+        downloadLayout.replaceWidget(
+            idcBrowserWidget.downloadButton, self.downloadButton)
+        self.downloadButton.connect('clicked(bool)', idcBrowserWidget.onDownloadButton)
+
         idcBrowserWidget.browserCollapsibleButton.setVisible(False)
+        idcBrowserWidget.loadButton.setVisible(False)
+
+        idcBrowserWidget.storagePathButton.connect('directoryChanged(const QString &)', self.setDownloadDirectory)
+        idcBrowserWidget.downloadDestinationSelector.setVisible(False)
+        layout = idcBrowserWidget.downloadDestinationSelector.parent().layout()
+        label = layout.itemAt(layout.indexOf(idcBrowserWidget.downloadDestinationSelector)-1).widget()
+        label.setVisible(False)
+
+    def setDownloadDirectory(self, directory: str):
+        idcBrowserWidget = slicer.modules.idcbrowser.widgetRepresentation().self()
+        idcBrowserWidget.downloadDestinationSelector.directory = directory
 
     def cleanup(self):
         """Called when the application closes and the module widget is destroyed."""
@@ -140,7 +162,7 @@ class HomeWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         """Create toolbar and dialog for app settings"""
         settingsToolBar = self.insertToolBar("MainToolBar", "SettingsToolBar", title="Settings")
 
-        gearIcon = qt.QIcon(self.resourcePath("Icons/Gears.png"))
+        gearIcon = qt.QIcon(self.resourcePath("Icons/Gears.svg"))
         self.settingsAction = settingsToolBar.addAction(gearIcon, "")
 
         # Settings dialog

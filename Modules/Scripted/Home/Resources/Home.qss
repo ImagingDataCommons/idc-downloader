@@ -44,15 +44,26 @@ QTableWidget
 }
 QTableWidget::item:alternate
 {
-background-color: #F9F9F9;
+  background-color: #F9F9F9;
 }
 QTableWidget::item
 {
-background-color: #FFFFFF;
-color: #333333;
+  background-color: #FFFFFF;
+  color: #333333;
 }
 QTableWidget::item:selected
 {
-background-color: #B0C4DE;
-color: #000000;
+  background-color: #B0C4DE;
+  color: #000000;
+}
+
+QCheckBox
+{
+  background-color: #F8F8F8;
+  color: #000000;
+}
+QCheckBox:hover
+{
+  background-color: #F8F8F8;
+  color: #000000;
 }
