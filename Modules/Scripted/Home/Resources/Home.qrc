@@ -7,7 +7,7 @@
 <RCC version="1.0">
 
   <qresource prefix="Icons">
-    <file alias="Gears.png">./Icons/Gears.png</file>
+    <file alias="Gears.svg">./Icons/Gears.svg</file>
   </qresource>
 
 </RCC>
