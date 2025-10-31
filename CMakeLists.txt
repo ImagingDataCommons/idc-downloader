@@ -102,6 +102,13 @@ option(Slicer_USE_PYTHONQT                      "Build application with Python s
 option(Slicer_USE_QtTesting                     "Build application with QtTesting support"            OFF)
 option(Slicer_USE_SimpleITK                     "Build application with SimpleITK support"            OFF)
 
+option(Slicer_BUILD_CLI                         "Build application with CLI modules"                  OFF)
+option(Slicer_BUILD_CLI_SUPPORT                 "Build application with CLI module support"           OFF)
+option(Slicer_BUILD_LEGACY_CLI                  "Build application with legacy CLI module support"    OFF)
+option(Slicer_BUILD_MULTIMEDIA_SUPPORT          "Build application with Multimedia support"           OFF)
+option(Slicer_BUILD_QTLOADABLEMODULES           "Build application with QtLoadable modules"           OFF)
+option(Slicer_BUILD_QT_DESIGNER_PLUGINS         "Build application with Qt Designer plugins"          OFF)
+option(Slicer_BUILD_vtkAddons                   "Build application with VTK addons"                   OFF)
 option(Slicer_BUILD_BRAINSTOOLS                 "Build application with BRAINSTools module"           OFF)
 option(Slicer_BUILD_DataStore                   "Build application with DataStore module"             OFF)
 option(Slicer_BUILD_CompareVolumes              "Build application with ChangeTrackerPy module"       OFF)
