@@ -43,7 +43,7 @@ jobs:
             c_compiler: cl
 
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
 
     # ----- Qt installation -----
     # Windows/Linux: keep install-qt-action
@@ -91,7 +91,7 @@ jobs:
     # ----- Upload artifacts -----
     # Upload the built package as a workflow artifact for each matrix combination
     - name: Upload artifacts
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v6
       with:
         name: IDCDownloader-${{ matrix.os }}-${{ matrix.build_type }}-${{ github.sha }}
         path: ${{ steps.strings.outputs.build-output-dir }}/Slicer-build/IDCDownloader-*
